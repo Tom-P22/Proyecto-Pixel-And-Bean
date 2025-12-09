@@ -1,0 +1,105 @@
+-- ==========================================================
+-- SCRIPT MAESTRO: PIXEL & BEAN
+
+-- ==========================================================
+
+DROP DATABASE IF EXISTS pixelandbean;
+CREATE DATABASE pixelandbean;
+USE pixelandbean;
+
+-- 1. CREACIÓN DE TABLAS
+-- ==========================================================
+
+CREATE TABLE usuario (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nombre_completo VARCHAR(100),
+    rol ENUM('ADMIN', 'OPERADOR', 'CAJERO') NOT NULL DEFAULT 'OPERADOR',
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE producto (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    categoria ENUM('BEBIDA', 'SNACK', 'TIEMPO', 'MERCH') NOT NULL,
+    tipo VARCHAR(50), 
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL CHECK (precio > 0),
+    activo BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE venta (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    fecha_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_id INT NOT NULL,
+    usuario_nombre VARCHAR(100) NOT NULL,
+    total DECIMAL(10,2) NOT NULL CHECK (total >= 0),
+    estado ENUM('ACTIVA', 'ANULADA') NOT NULL DEFAULT 'ACTIVA',
+    observaciones TEXT,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE venta_detalle (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    venta_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    precio_unitario DECIMAL(10,2) NOT NULL CHECK (precio_unitario > 0),
+    subtotal DECIMAL(10,2) NOT NULL CHECK (subtotal >= 0),
+    FOREIGN KEY (venta_id) REFERENCES venta(id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES producto(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- 2. INSERTAR USUARIOS
+-- ==========================================================
+
+
+INSERT INTO usuario (username, password, nombre_completo, rol, activo) VALUES
+('admin',     SHA2('1234', 256), 'Administrador General', 'ADMIN', TRUE),
+('operador',  SHA2('1212', 256), 'Elvis Steck',           'OPERADOR', TRUE),
+('operador2', SHA2('2121', 256), 'Armando Paredes',       'OPERADOR', TRUE),
+('cajero',    SHA2('1234', 256), 'Alan Brito',            'CAJERO', TRUE);
+
+
+-- 3. INSERTAR PRODUCTOS
+-- ==========================================================
+
+INSERT INTO producto (nombre, categoria, tipo, precio, activo) VALUES
+-- === BEBIDAS ===
+('Espresso', 'BEBIDA', 'CAFE', 2500, TRUE),
+('Cappuccino', 'BEBIDA', 'CAFE', 3000, TRUE),
+('Latte', 'BEBIDA', 'CAFE', 3200, TRUE),
+('Americano', 'BEBIDA', 'CAFE', 2800, TRUE),
+('Coca-Cola', 'BEBIDA', 'GASEOSA', 1500, TRUE),
+('Sprite', 'BEBIDA', 'GASEOSA', 1500, TRUE),
+('Jugo de naranja', 'BEBIDA', 'JUGO', 2000, TRUE),
+('Jugo de manzana', 'BEBIDA', 'JUGO', 2000, TRUE),
+('Agua', 'BEBIDA', 'AGUA', 500, TRUE),
+('Te', 'BEBIDA', 'TE', 1000, TRUE),
+
+-- === SNACKS ===
+('Brownie', 'SNACK', 'POSTRE', 2000, TRUE),
+('Cheesecake', 'SNACK', 'POSTRE', 2500, TRUE),
+('Papas Fritas', 'SNACK', 'SALADO', 1800, TRUE),
+('Nachos', 'SNACK', 'SALADO', 2200, TRUE),
+('Mix de fruta picada', 'SNACK', 'FRUTA', 5000, TRUE),
+('Galletas de navidad', 'SNACK', 'GALLETA', 2000, TRUE),
+
+-- === TIEMPO ARCADE ===
+('15 minutos', 'TIEMPO', 'ARCADE', 1500, TRUE),
+('30 minutos', 'TIEMPO', 'ARCADE', 2500, TRUE),
+('1 hora', 'TIEMPO', 'ARCADE', 4000, TRUE),
+('2 horas', 'TIEMPO', 'ARCADE', 7000, TRUE),
+
+-- === MERCH ===
+('Polera Pixel & Bean', 'MERCH', 'ROPA', 6000, TRUE),
+('Gorro Pixel & Bean', 'MERCH', 'ACCESORIO', 2000, TRUE),
+('Figura Taza Demoniaca', 'MERCH', 'FIGURA', 15000, TRUE),
+('Peluche Beanie', 'MERCH', 'PELUCHE', 10000, TRUE);
+
+-- Verificacion
+SELECT * FROM usuario;
+SELECT * FROM producto;
